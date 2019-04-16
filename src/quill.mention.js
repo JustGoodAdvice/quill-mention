@@ -1,7 +1,7 @@
 import Quill from 'quill';
 import Keys from './constants/keys';
 import './quill.mention.css';
-import './blots/mention';
+import './blots/entity';
 
 const numberIsNaN = require('./imports/numberisnan.js');
 
@@ -193,8 +193,9 @@ class Mention {
     }
     this.quill
       .deleteText(this.mentionCharPos, this.cursorPos - this.mentionCharPos, Quill.sources.USER);
-    this.quill.insertEmbed(this.mentionCharPos, 'mention', render, Quill.sources.USER);
-    this.quill.insertText(this.mentionCharPos + 1, ' ', Quill.sources.USER);
+    this.quill.insertEmbed(this.mentionCharPos, 'entity', render, Quill.sources.USER);
+    // don't add extra space
+    // this.quill.insertText(this.mentionCharPos + 1, ' ', Quill.sources.USER);
     this.quill.setSelection(this.mentionCharPos + 2, Quill.sources.USER);
     this.hideMentionList();
   }
@@ -370,6 +371,7 @@ class Mention {
     const range = this.quill.getSelection();
     if (range == null) return;
     this.cursorPos = range.index;
+    const entityTagPrefixLen = 2;
     const startPos = Math.max(0, this.cursorPos - this.options.maxChars);
     const beforeCursorPos = this.quill.getText(startPos, this.cursorPos - startPos);
     const mentionCharIndex = this.options.mentionDenotationChars.reduce((prev, cur) => {
@@ -385,9 +387,11 @@ class Mention {
       }
       const mentionCharPos = this.cursorPos - (beforeCursorPos.length - mentionCharIndex);
       this.mentionCharPos = mentionCharPos;
-      const textAfter = beforeCursorPos.substring(mentionCharIndex + 1);
+      const textAfter = beforeCursorPos.substring(mentionCharIndex + entityTagPrefixLen);
+
       if (textAfter.length >= this.options.minChars && this.hasValidChars(textAfter)) {
-        const mentionChar = beforeCursorPos[mentionCharIndex];
+        // const mentionChar = beforeCursorPos[mentionCharIndex];
+        const mentionChar = beforeCursorPos.substring(0, entityTagPrefixLen); // first 2 characters are "tag" prefix
         this.options.source(textAfter, this.renderList.bind(this, mentionChar), mentionChar);
       } else {
         this.hideMentionList();
