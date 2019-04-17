@@ -191,12 +191,13 @@ class Mention {
     if (!this.options.showDenotationChar) {
       render.denotationChar = '';
     }
-    this.quill
-      .deleteText(this.mentionCharPos, this.cursorPos - this.mentionCharPos, Quill.sources.USER);
-    this.quill.insertEmbed(this.mentionCharPos, 'entity', render, Quill.sources.USER);
-    // don't add extra space
-    // this.quill.insertText(this.mentionCharPos + 1, ' ', Quill.sources.USER);
-    this.quill.setSelection(this.mentionCharPos + 2, Quill.sources.USER);
+    this.quill.deleteText(this.mentionCharPos, this.cursorPos - this.mentionCharPos, Quill.sources.USER);
+    // don't use `insertEmbed`, use custom 'link' format
+    // this.quill.insertEmbed(this.mentionCharPos, 'entity', render, Quill.sources.USER);
+    const text = String(render.value);
+    const endOfText = text.length;
+    this.quill.insertText(this.mentionCharPos, text, 'entity', render);
+    this.quill.setSelection(this.mentionCharPos + endOfText + 1, Quill.sources.USER);
     this.hideMentionList();
   }
 
@@ -409,7 +410,9 @@ class Mention {
 
   onSelectionChange(range) {
     if (range && range.length === 0) {
-      this.onSomethingChange();
+      // when user clicks in Quill a "selectChange" event is fired
+      // we don't want this below, if used it will open the menion list
+      // this.onSomethingChange();
     } else {
       this.hideMentionList();
     }

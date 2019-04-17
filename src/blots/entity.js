@@ -1,44 +1,21 @@
 import Quill from 'quill';
 
-const Embed = Quill.import('blots/embed');
+const Inline = Quill.import('blots/inline');
 
-
-class JgaEntityBlot extends Embed {
+class Entity extends Inline {
 	static create(data) {
-		const node = super.create();
-		// some reason the blot receives `data.tags` as a string
-		// coerce to an array and move on
-		const tags = String(data.tags).split(",");
-		const [prefix, suffix] = tags;
-		const denotationCharPrefix = document.createElement('span');
-		denotationCharPrefix.className = 'ql-entity-tag-char';
-		denotationCharPrefix.innerHTML = prefix;
-		node.appendChild(denotationCharPrefix);
-
-		node.innerHTML += data.value;
-
-		const denotationCharSuffix = document.createElement('span');
-		denotationCharSuffix.className = 'ql-entity-tag-char';
-		denotationCharSuffix.innerHTML = suffix;
-		node.appendChild(denotationCharSuffix);
-		return JgaEntityBlot.setDataValues(node, data);
-	}
-
-	static setDataValues(element, data) {
-		const domNode = element;
-		Object.keys(data).forEach((key) => {
-			domNode.dataset[key] = data[key];
-		});
-		return domNode;
-	}
-
-	static value(domNode) {
-		return domNode.dataset;
+		const node = super.create(data);
+		console.log("BLOT", data)
+		node.setAttribute('href', '#');
+		node.setAttribute('data-entity-id', data.id);
+		node.setAttribute('data-entity-content', data.content);
+		node.setAttribute('spellcheck', false);
+		return node;
 	}
 }
 
-JgaEntityBlot.blotName = 'entity';
-JgaEntityBlot.tagName = 'span';
-JgaEntityBlot.className = 'entity';
+Entity.blotName = 'entity';
+Entity.tagName = 'A';
+Entity.className = 'ql-entity';
 
-Quill.register(JgaEntityBlot);
+Quill.register(Entity);
